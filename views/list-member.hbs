@@ -1,0 +1,16 @@
+<header class="jumbotron">
+	<h1>Member List</h1>
+</header>
+<div class="container">
+	<div class="row">
+		<div class="col-md-offset-4 col-md-4 well">
+			{{#each result }}
+				<ul>
+					<li>{{this.pseudo}}</li>
+					<li>{{this.email}}</li>
+					<li>{{this.password}}</li>
+				</ul>	
+			{{/each}}
+		</div>
+	</div>	
+</div>

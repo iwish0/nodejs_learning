@@ -3,6 +3,10 @@ var exphbs=require('express-handlebars'); // Templating engine
 var logger=require('morgan'); // get the log of the request and put it on the console
 var bodyparser=require('body-parser'); // récupère variable de formulaire, données au format json....et stocke cela dans un objet body accessible dont la requête a accès
 
+var MongoClient=require('mongodb').MongoClient;
+var assert=require('assert'); // Pour mongodb =>Permet de réaliser des tests en fixant en critère le résultat attendu pour une requêtes
+var url='mongodb://localhost:27017/memberspace';
+
 var app=express();
 
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'})); //extname .hbs => permet de prendre les fichiers ayant l extension .hbs comme moteur de template au lieu de l'extension .handlebars par défaut
@@ -19,11 +23,41 @@ app.get('/',function(req,res){
 	console.log('Bonjour');
 })
 app.post('/sign',function(req,res){
-	res.render('sign',{param:req.body,title:"Affichage variable de formulaire"});
-	console.log(req.body);
-
+	var param=req.body;
+	MongoClient.connect(url,function(err,db){
+		if(err){
+			console.log(err);
+		}else{
+			db.collection('users').insertOne(
+				{"pseudo":param.pseudo,"email":param.email,"password":param.password},
+				function(err,result){
+					assert.equal(null,err);
+					assert.equal(1,result.insertedCount);
+			
+				db.close(function(){
+				console.log('The server MongoDB is stoped');
+				})
+			})
+		}
+	})	
+	res.redirect(301,'/list-member');
+})
+app.get('/list-member',function(req,res){
+	MongoClient.connect(url,function(err,db){
+		if(err){
+			console.log(err);
+		}else{
+			db.collection('users').find().toArray(function(err,result){
+				if(err){
+					console.log(err);
+				}else
+				res.render('list-member',{result:result});
+				db.close();
+			})
+		}
+	})
 })
 
 app.listen(3000, function(){
-	console.log('The server starts')
+	console.log('The server nodejs starts')
 });
