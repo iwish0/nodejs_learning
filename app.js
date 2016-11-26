@@ -21,7 +21,24 @@ rappel pour comprendre le fonctionnement: En méthode post les variables de form
 app.get('/',function(req,res){
 	res.render('home');
 });
-app.get('/insert-form',function(req,res){
+app.post('/identification-action',function(req,res){
+	param=req.body;
+	MongoClient.connect(url,function(err,db){
+		if(err){
+			console.log(err);
+		}else{ // count() renvoie un objet donc il faut lui passer une fonction de rappel pour acceder sa variable count
+			db.collection('users').find({pseudo:param.pseudo,password:param.password}).count(function(err,count){
+				console.log('count vaut '+count);
+				if(count==1){
+					console.log('Identification Ok');
+				}else{
+					console.log('Identification Ko');
+				}
+			});
+		}
+	});
+});
+ap.get('/insert-form',function(req,res){
 	res.render('form-register');
 });
 app.post('/insert-action',function(req,res){
