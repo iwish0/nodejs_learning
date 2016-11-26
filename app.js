@@ -5,7 +5,7 @@ var bodyparser=require('body-parser'); // récupère variable de formulaire, don
 
 var MongoClient=require('mongodb').MongoClient;
 var assert=require('assert'); // Pour mongodb =>Permet de réaliser des tests en fixant en critère le résultat attendu pour une requêtes
-var url='mongodb://localhost:27017/memberspace';
+var url = 'mongodb://localhost:27017/memberspace';
 
 var app=express();
 
@@ -20,9 +20,11 @@ rappel pour comprendre le fonctionnement: En méthode post les variables de form
 
 app.get('/',function(req,res){
 	res.render('home');
-	console.log('Bonjour');
-})
-app.post('/sign',function(req,res){
+});
+app.get('/insert-form',function(req,res){
+	res.render('form-register');
+});
+app.post('/insert-action',function(req,res){
 	var param=req.body;
 	MongoClient.connect(url,function(err,db){
 		if(err){
@@ -40,9 +42,39 @@ app.post('/sign',function(req,res){
 			})
 		}
 	})	
-	res.redirect(301,'/list-member');
+	res.redirect(301,'/find');
+});
+app.get('/update-form',function(req,res){
+	res.render('update-form');
+});
+app.post('/update-action',function(req,res){
+	var param=req.body;
+	MongoClient.connect(url,function(err,db){
+		if(err){
+			console.log(err);
+		}else{
+			db.collection('users').updateOne({pseudo:param.previouspseudo},
+				{$set:{pseudo:param.pseudo,email:param.email,age:param.age}},{upsert:true});
+			res.redirect(301,'/find');
+		}
+	});
+});
+app.get('/delete-form',function(req,res){
+	res.render('delete-form');
 })
-app.get('/list-member',function(req,res){
+app.post('/delete-action',function(req,res){
+	var param=req.body;
+	MongoClient.connect(url,function(err,db){
+		if(err){
+			console.log(err);
+		}else{
+			db.collection('users').deleteOne({pseudo:param.pseudo});
+			res.redirect('/find');
+		}
+
+	});
+});
+app.get('/find',function(req,res){
 	MongoClient.connect(url,function(err,db){
 		if(err){
 			console.log(err);
@@ -54,9 +86,9 @@ app.get('/list-member',function(req,res){
 				res.render('list-member',{result:result});
 				db.close();
 			})
-		}
+	}
 	})
-})
+});
 
 app.listen(3000, function(){
 	console.log('The server nodejs starts')
