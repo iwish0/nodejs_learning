@@ -4,7 +4,8 @@
 <div class="container">
 	<div class="row">
 		<div class="col-md-offset-4 col-md-4 well">
-			{{#each result }}
+			{{!--  result=[{pseudo:'blabla,age:5'},{pseudo:'blabla,age:5}];  --}}
+			{{#each result }} 
 				<ul>
 					<li>{{this.pseudo}}</li>
 					<li>{{this.email}}</li>
