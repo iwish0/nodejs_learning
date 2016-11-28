@@ -6,8 +6,16 @@ var cookieSession=require('cookie-session');
 var MongoClient=require('mongodb').MongoClient;
 var assert=require('assert'); // Pour mongodb =>Permet de réaliser des tests en fixant en critère le résultat attendu pour une requêtes
 var url = 'mongodb://localhost:27017/memberspace';
-
 var app=express();
+
+
+
+var server = require('http').createServer(app); //On instancie d'abord un serveur http puis on lie socketio a celui-ci
+var io=require('socket.io').listen(server);
+io.on('connection',function(socket){
+	console.log('socket io fonctionne');
+});
+
 
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'})); //extname .hbs => permet de prendre les fichiers ayant l extension .hbs comme moteur de template au lieu de l'extension .handlebars par défaut
 app.set('view engine', '.hbs');
@@ -17,19 +25,21 @@ app.use(express.static('public'))
 .use(bodyparser.urlencoded({ extended:false })); /** get form var and put them in a object body. This object will contain key-value pairs, so the req can get them
 rappel pour comprendre le fonctionnement: En méthode post les variables de formulaire sont cachés dans le body de la requête
  **/
- app.use(cookieSession({
+ app.use(cookieSession({ // Create the session
 	name:'session123', // name of the session (of the cookie in fact) . I can put what i want as name
 	keys:['key1','key2'] //
 }));
 app.set('trust proxy', 1)  //Trust proxy first
 
-
+app.get('/chat',function(req,res){
+	res.render('chat');
+});
 app.get('/',function(req,res){
 	var isSessionEmpty=req.session.isPopulated; /** I check for fun if the sesssion is empty or not. 
 	If the session is not empty, it means that the identification was ok 
 	(app.post('/identification-action') **/
 	console.log(isSessionEmpty);
-	res.render('home',{session:req.session}); /** req.session create the session or get it if the session already exists
+	res.render('home',{session:req.session}); /** req.session  get the content of the session
 	 send the session to the view **/
 });
 app.post('/logout',function(req,res){
@@ -131,6 +141,6 @@ app.get('/find',function(req,res){
 	})
 });
 
-app.listen(3000, function(){
+server.listen(3000, function(){
 	console.log('The server nodejs starts')
 });

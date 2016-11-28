@@ -1,8 +1,8 @@
 <header class="jumbotron">
 	<h1>Home</h1> 
-	
+	{{!-- if the parameter id exists, it means that the identification was ok and the session is not empty so i show information and destroy session button/ else i show the form for identification --}}
 	{{#if session.id}}  
-		
+		{{!-- equivaut a faire for(var value in object / object={'id':'blabla','pseudo':'blabla'} --}}
 		{{#each session}}
 		<ul class="list-inline">
 			<li>{{this}}</li>
