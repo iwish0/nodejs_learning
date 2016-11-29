@@ -1,7 +1,29 @@
 <header class="jumbotron">
 	<h1>Chat</h1>
 </header>
-  <script src="/socket.io/socket.io.js"></script>
+<div id="output"></div>
+<input type="text" id="message" />
+<input type="button" value="Valider" />
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jquery/3.1.1/jquery.min.js"></script> 
+ <script src="/socket.io/socket.io.js"></script>
  <script>
-	var socket = io.connect('http://localhost:3000/chat');
+
+	var socket = io();
+	socket.on('message',function(message){
+		alert('Le serveur a un message pour vous :'+ message);
+		socket.emit('salutation','Je vais bien merci à vous Mr le serveur!');
+	});
+	$('input[type="button"]').on('click',function(){  
+		var message=$('#message').val();
+		$('#output').append('<p>'+message+'</p>');
+		socket.emit('setChatMessage',message); /** j envoie un événement setChatMessage qui sera écouter par le serveur/ Le serveur va émettre à son tour un événement getChatMessage qui sera
+		écouter via le code en dessous par le client
+		 **/
+		$('#message').val('');
+	});
+	socket.on('getChatMessage',function(message){
+		$('#output').append('<p>'+message+'</p>');
+	});
+	
 </script>

@@ -1,4 +1,3 @@
-var express=require('express');
 var exphbs=require('express-handlebars'); // Templating engine
 var logger=require('morgan'); // get the log of the request and put it on the console
 var bodyparser=require('body-parser'); // récupère variable de formulaire, données au format json....et stocke cela dans un objet s'appelant body dont la requête a accès
@@ -6,15 +5,31 @@ var cookieSession=require('cookie-session');
 var MongoClient=require('mongodb').MongoClient;
 var assert=require('assert'); // Pour mongodb =>Permet de réaliser des tests en fixant en critère le résultat attendu pour une requêtes
 var url = 'mongodb://localhost:27017/memberspace';
+
+
+
+var express=require('express');
 var app=express();
-
-
-
-var server = require('http').createServer(app); //On instancie d'abord un serveur http puis on lie socketio a celui-ci
-var io=require('socket.io').listen(server);
+var http= require('http').Server(app); //On instancie d'abord un serveur http puis on lie socketio a celui-ci
+var io=require('socket.io')(http);
 io.on('connection',function(socket){
-	console.log('socket io fonctionne');
+	console.log('Un utilisateur s\'est connecté');
+		socket.emit('message','Bonjour Mr le client! Comment allez-vous?');
+		socket.on('salutation',function(message){
+			console.log('Le client vous a répondu: '+message);
+		});
+	socket.on('disconnect',function(){
+		console.log('Un utilisateur s\'est déconnecté!');
+	});
+	socket.on('setChatMessage',function(message){  // voir commentaire dans views/chat.hbs si besoin rappel fonctionnement
+		socket.broadcast.emit('getChatMessage',message); 
+		/** broadcast va émettre un événement qui sera écouter par tous les clients
+			hormis le client qui est a l origine de l emission de l evenement que le serveur vient d ecouter
+			En gros le client qui a emis l evenement setChatMessage, n ecoutera pas l evenement getChatMessage
+		 **/
+	});
 });
+
 
 
 app.engine('.hbs', exphbs({defaultLayout: 'main',extname: '.hbs'})); //extname .hbs => permet de prendre les fichiers ayant l extension .hbs comme moteur de template au lieu de l'extension .handlebars par défaut
@@ -141,6 +156,6 @@ app.get('/find',function(req,res){
 	})
 });
 
-server.listen(3000, function(){
+http.listen(3000, function(){
 	console.log('The server nodejs starts')
 });
